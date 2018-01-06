@@ -1,6 +1,7 @@
 <html>
   <head>
     <script src="https://cdn.jsdelivr.net/npm/easeljs@1.0.2/lib/easeljs.min.js"></script>
+    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
   <script>
 function init() {
   var stage = new createjs.Stage("demoCanvas");
@@ -11,6 +12,12 @@ function init() {
   stage.addChild(circle);
   stage.update();
 }
+
+var socket = io('http://localhost:8080');
+socket.on('news', function (data) {
+  console.log(data);
+  socket.emit('my other event', { my: 'data' });
+});
   </script>
   </head>
   <body onload="init();">
