@@ -10,3 +10,9 @@ services:
     ports:
       - "8080:8080"
     command: 'node game_server.js'
+  web-server:
+    image: nginx
+    volumes:
+      - ./pages:/usr/share/nginx/html
+    ports:
+      - "8000:80"
