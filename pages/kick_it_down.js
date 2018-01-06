@@ -1,10 +1,8 @@
 function init() {
-  var stage = new createjs.Stage("demoCanvas");
-  var circle = new createjs.Shape();
-  circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
-  circle.x = 100;
-  circle.y = 100;
-  stage.addChild(circle);
+  var stage = new createjs.Stage("stage");
+  var background = new createjs.Shape();
+  background.graphics.beginFill("Black").drawRect(0, 0, 640, 480);
+  stage.addChild(background);
   stage.update();
 }
 
