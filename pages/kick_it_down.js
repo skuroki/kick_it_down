@@ -9,9 +9,20 @@ class Character {
   }
 
   update() {
-    let now = Date.now();
+    let now = ServerDate.now();
     this.shape.x = this.x + this.vx * (now - this.from) / 1000.0;
     this.shape.y = this.y + this.vy * (now - this.from) / 1000.0;
+  }
+}
+
+let timeDiff = 0;
+class ServerDate {
+  static set(time) {
+    timeDiff = Date.now() - time;
+  }
+
+  static now() {
+    return Date.now() - timeDiff;
   }
 }
 
@@ -25,10 +36,15 @@ function init() {
 
   let socket = io('http://localhost:8080');
 
+  socket.on('clock', time => {
+    console.log(time);
+    ServerDate.set(time)
+  });
+
   socket.on('character', data => {
     console.log(data);
     let shape = new createjs.Shape();
-    shape.graphics.beginFill("Red").drawRect(-16, -16, 16, 16);
+    shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
     stage.addChild(shape);
     characters.push(new Character(shape, data.x, data.y, data.vx, data.vy, data.from));
   });
