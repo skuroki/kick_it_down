@@ -1,3 +1,17 @@
+class Character {
+  constructor() {
+    this.x = 320;
+    this.y = 240;
+    this.vx = 32.0;
+    this.vy = 0.0;
+    this.from = Date.now();
+  }
+
+  get parameters() {
+    return { x: this.x, y: this.y, vx: this.vx, vy: this.vy, from: this.from }
+  }
+}
+
 function handler (req, res) {
   res.writeHead(200);
   res.end('hello');
@@ -16,7 +30,7 @@ io.on('connection', socket => {
 
   socket.emit('clock', Date.now());
 
-  let character = { x: 320, y: 240, vx: 32.0, vy: 0.0, from: Date.now() };
+  let character = new Character();
   characters.push(character);
-  socket.emit('character', character);
+  socket.emit('character', character.parameters);
 });
