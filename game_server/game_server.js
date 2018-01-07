@@ -14,7 +14,7 @@ io.on('connection', function (socket) {
     console.log(data);
   });
 
-  var character = { x: 320, y: 240 };
+  var character = { x: 320, y: 240, vx: 32.0, vy: 0.0, from: Date.now() };
   characters.push(character);
   socket.emit('character', character);
 });
