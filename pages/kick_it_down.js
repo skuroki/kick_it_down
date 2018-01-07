@@ -31,13 +31,14 @@ function init() {
   let background = new createjs.Shape();
   background.graphics.beginFill("Black").drawRect(0, 0, 640, 480);
   stage.addChild(background);
+  let textBoard = new createjs.Text("Hello World", "20px Arial", "White");
+  stage.addChild(textBoard);
   stage.update();
   let characters = [];
 
   let socket = io('http://localhost:8080');
 
   socket.on('clock', time => {
-    console.log(time);
     ServerDate.set(time)
   });
 
@@ -49,9 +50,17 @@ function init() {
     characters.push(new Character(shape, data.x, data.y, data.vx, data.vy, data.from));
   });
 
+  socket.on('update', data => {
+    console.log(data);
+    characters[0].x = data.x;
+    characters[0].vx = data.vx;
+    characters[0].from = data.from;
+  });
+
   createjs.Ticker.addEventListener('tick', event => {
     for (let character of characters) {
       character.update();
+      textBoard.text = character.shape.x;
     }
     stage.update();
   });
