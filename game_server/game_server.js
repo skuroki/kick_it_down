@@ -1,9 +1,14 @@
+const stageWidth = 320;
+const stageHeight = 480;
+const characterSize = 32;
+const floor = 360;
+
 class Character {
   constructor(id, socket) {
     this.id = id;
-    this.x = 320;
-    this.y = 240;
-    this.vx = 128.0;
+    this.x = stageWidth / 2;
+    this.y = floor;
+    this.vx = characterSize * 4;
     this.vy = 0.0;
     this.from = Date.now();
     this.socket = socket;
@@ -32,6 +37,18 @@ let characters = [];
 
 app.listen(8080);
 
+function myCharacter(socket) {
+  for (let character of characters) {
+    if (character == null) {
+      continue;
+    }
+
+    if (character.socket == socket) {
+      return character;
+    }
+  }
+}
+
 io.on('connection', socket => {
   socket.emit('clock', Date.now());
 
@@ -55,18 +72,25 @@ io.on('connection', socket => {
   }, 1000);
 
   socket.on('disconnect', (reason) => {
-    for (let character of characters) {
-      if (character == null) {
-        continue;
-      }
+    let character = myCharacter(socket);
+    console.log('remove character');
+    console.log(character.id);
+    characters[character.id] = null;
+    socket.broadcast.emit('remove_character', character.id);
+  });
 
-      if (character.socket == socket) {
-        console.log('remove character');
-        console.log(character.id);
-        characters[character.id] = null;
-        socket.broadcast.emit('remove_character', character.id);
-      }
-    }
+  socket.on('jump', () => {
+    console.log('jump!');
+    let character = myCharacter(socket);
+    let current = character.current
+    character.vy = -characterSize * 4;
+    character.x = current.x;
+    character.y = current.y;
+    character.from = Date.now();
+    console.log('update character');
+    console.log(character.parameters);
+    character.socket.emit('update', character.parameters);
+    character.socket.broadcast.emit('update', character.parameters);
   });
 });
 
@@ -76,22 +100,41 @@ setInterval( () => {
       continue;
     }
 
-    const left_wall = 32 / 2;
-    const right_wall = 640 - 32 / 2;
+    const left_wall = characterSize / 2;
+    const right_wall = stageWidth - characterSize / 2;
+    const ceil = characterSize / 2
+    let changed = false;
     let current = character.current
     if (current.x > right_wall) {
       character.x = right_wall;
+      character.y = current.y;
       character.vx = -character.vx;
       character.from = Date.now();
-      console.log('update character');
-      console.log(character.parameters);
-      character.socket.emit('update', character.parameters);
-      character.socket.broadcast.emit('update', character.parameters);
+      changed = true;
     }
     else if (current.x < left_wall) {
       character.x = left_wall;
+      character.y = current.y;
       character.vx = -character.vx;
       character.from = Date.now();
+      changed = true;
+    }
+    if (current.y < ceil) {
+      character.x = current.x;
+      character.y = ceil;
+      character.vy = -character.vy;
+      character.from = Date.now();
+      changed = true;
+    }
+    else if (current.y > floor) {
+      character.x = current.x;
+      character.y = floor;
+      character.vy = 0.0;
+      character.from = Date.now();
+      changed = true;
+    }
+
+    if (changed) {
       console.log('update character');
       console.log(character.parameters);
       character.socket.emit('update', character.parameters);

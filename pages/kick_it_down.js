@@ -13,6 +13,14 @@ class Character {
     this.shape.x = this.x + this.vx * (now - this.from) / 1000.0;
     this.shape.y = this.y + this.vy * (now - this.from) / 1000.0;
   }
+
+  action(data) {
+    this.x = data.x;
+    this.y = data.y;
+    this.vx = data.vx;
+    this.vy = data.vy;
+    this.from = data.from;
+  }
 }
 
 let timeDiff = 0;
@@ -29,7 +37,8 @@ class ServerDate {
 function init() {
   let stage = new createjs.Stage("stage");
   let background = new createjs.Shape();
-  background.graphics.beginFill("Black").drawRect(0, 0, 640, 480);
+  background.graphics.beginFill("LightBlue").drawRect(0, 0, 320, 480);
+  background.graphics.beginFill("Brown").drawRect(0, 360, 320, 120);
   stage.addChild(background);
   let textBoard = new createjs.Text("Hello World", "20px Arial", "White");
   stage.addChild(textBoard);
@@ -57,9 +66,7 @@ function init() {
 
   socket.on('update', data => {
     console.log(data);
-    characters[data.id].x = data.x;
-    characters[data.id].vx = data.vx;
-    characters[data.id].from = data.from;
+    characters[data.id].action(data);
   });
 
   socket.on('remove_character', characterId => {
@@ -79,5 +86,10 @@ function init() {
       textBoard.text = character.shape.x;
     }
     stage.update();
+  });
+
+  stage.addEventListener('click', event => {
+    console.log('click!');
+    socket.emit('jump');
   });
 }
