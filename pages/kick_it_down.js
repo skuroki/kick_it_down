@@ -45,20 +45,36 @@ function init() {
   socket.on('character', data => {
     console.log(data);
     let shape = new createjs.Shape();
-    shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
+    if (data.id > 0) {
+      shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
+    }
+    else {
+      shape.graphics.beginFill("Blue").drawRect(-16, -16, 32, 32);
+    }
     stage.addChild(shape);
-    characters.push(new Character(shape, data.x, data.y, data.vx, data.vy, data.from));
+    characters[data.id] = (new Character(shape, data.x, data.y, data.vx, data.vy, data.from));
   });
 
   socket.on('update', data => {
     console.log(data);
-    characters[0].x = data.x;
-    characters[0].vx = data.vx;
-    characters[0].from = data.from;
+    characters[data.id].x = data.x;
+    characters[data.id].vx = data.vx;
+    characters[data.id].from = data.from;
+  });
+
+  socket.on('remove_character', characterId => {
+    console.log('remove_character');
+    console.log(characterId);
+    let character = characters[characterId];
+    stage.removeChild(character.shape);
+    characters[characterId] = null;
   });
 
   createjs.Ticker.addEventListener('tick', event => {
     for (let character of characters) {
+      if (character == null) {
+        continue;
+      }
       character.update();
       textBoard.text = character.shape.x;
     }
