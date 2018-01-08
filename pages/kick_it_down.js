@@ -40,7 +40,7 @@ function init() {
   background.graphics.beginFill("LightBlue").drawRect(0, 0, 320, 480);
   background.graphics.beginFill("Brown").drawRect(0, 360, 320, 120);
   stage.addChild(background);
-  let textBoard = new createjs.Text("Hello World", "20px Arial", "White");
+  let textBoard = new createjs.Text("Kick it down!", "20px Arial", "White");
   stage.addChild(textBoard);
   stage.update();
   let characters = [];
@@ -77,13 +77,20 @@ function init() {
     characters[characterId] = null;
   });
 
+  socket.on('won', () => {
+    textBoard.text = 'Won!'
+  });
+
+  socket.on('lost', () => {
+    textBoard.text = 'Lost...'
+  });
+
   createjs.Ticker.addEventListener('tick', event => {
     for (let character of characters) {
       if (character == null) {
         continue;
       }
       character.update();
-      textBoard.text = character.shape.x;
     }
     stage.update();
   });

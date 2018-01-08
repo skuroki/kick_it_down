@@ -94,7 +94,12 @@ io.on('connection', socket => {
   });
 });
 
+let winner = null;
 setInterval( () => {
+  if (winner != null) {
+    return;
+  }
+
   for (let character of characters) {
     if (character == null) {
       continue;
@@ -102,7 +107,7 @@ setInterval( () => {
 
     const left_wall = characterSize / 2;
     const right_wall = stageWidth - characterSize / 2;
-    const ceil = characterSize / 2
+    const ceil = 180 + characterSize / 2
     let changed = false;
     let current = character.current
     if (current.x > right_wall) {
@@ -139,6 +144,45 @@ setInterval( () => {
       console.log(character.parameters);
       character.socket.emit('update', character.parameters);
       character.socket.broadcast.emit('update', character.parameters);
+    }
+
+    for (let opponent of characters) {
+      if (opponent == null || opponent == character) {
+        continue;
+      }
+      let currentOpponent = opponent.current;
+
+      if (
+        character.vy > 0 &&
+        currentOpponent.y > current.y &&
+        currentOpponent.y - characterSize < current.y &&
+        currentOpponent.x - characterSize < current.x &&
+        currentOpponent.x + characterSize > current.x
+      ) {
+        winner = character;
+        opponent.x = currentOpponent.x;
+        opponent.y = currentOpponent.y;
+        opponent.vx = character.vx * 8;
+        opponent.vy = -characterSize * 4;
+        opponent.from = Date.now();
+        console.log('update character');
+        console.log(opponent.parameters);
+        opponent.socket.emit('update', opponent.parameters);
+        opponent.socket.broadcast.emit('update', opponent.parameters);
+        character.x = current.x;
+        character.y = current.y;
+        character.vx = 0.0;
+        character.vy = 0.0;
+        character.from = Date.now();
+        console.log('update character');
+        console.log(character.parameters);
+        character.socket.emit('update', character.parameters);
+        character.socket.broadcast.emit('update', character.parameters);
+        console.log('won:');
+        console.log(character.id);
+        character.socket.emit('won');
+        character.socket.broadcast.emit('lost');
+      }
     }
   }
 }, 10);
