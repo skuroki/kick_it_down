@@ -1,6 +1,7 @@
 class Character {
-  constructor(shape, x, y, vx, vy, from) {
+  constructor(shape, id, x, y, vx, vy, from) {
     this.shape = shape;
+    this.id = id;
     this.x = x;
     this.y = y;
     this.vx = vx;
@@ -43,7 +44,7 @@ function init() {
   let textBoard = new createjs.Text("Kick it down!", "20px Arial", "White");
   stage.addChild(textBoard);
   stage.update();
-  let characters = [];
+  let characters = new Set();
 
   let socket = io('http://localhost:8080');
 
@@ -54,42 +55,50 @@ function init() {
   socket.on('character', data => {
     console.log(data);
     let shape = new createjs.Shape();
-    if (data.id > 0) {
+    if (data.id > 1) {
       shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
     }
     else {
       shape.graphics.beginFill("Blue").drawRect(-16, -16, 32, 32);
     }
     stage.addChild(shape);
-    characters[data.id] = (new Character(shape, data.x, data.y, data.vx, data.vy, data.from));
+    characters.add(new Character(shape, data.id, data.x, data.y, data.vx, data.vy, data.from));
   });
 
   socket.on('update', data => {
     console.log(data);
-    characters[data.id].action(data);
+    for (let character of characters) {
+      if (character.id == data.id) {
+        character.action(data);
+        break;
+      }
+    }
   });
 
   socket.on('remove_character', characterId => {
     console.log('remove_character');
     console.log(characterId);
-    let character = characters[characterId];
-    stage.removeChild(character.shape);
-    characters[characterId] = null;
+    for (let character of characters) {
+      if (character.id == data.id) {
+        stage.removeChild(character.shape);
+        characters.delete(character);
+        break;
+      }
+    }
   });
 
   socket.on('won', () => {
     textBoard.text = 'Won!'
+    socket.close();
   });
 
   socket.on('lost', () => {
     textBoard.text = 'Lost...'
+    socket.close();
   });
 
   createjs.Ticker.addEventListener('tick', event => {
     for (let character of characters) {
-      if (character == null) {
-        continue;
-      }
       character.update();
     }
     stage.update();

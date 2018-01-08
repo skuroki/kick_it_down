@@ -33,16 +33,13 @@ function handler (req, res) {
 
 let app = require('http').createServer(handler);
 let io = require('socket.io')(app);
-let characters = [];
+let characters = new Set();
+let characterIdCount = 0;
 
 app.listen(8080);
 
 function myCharacter(socket) {
   for (let character of characters) {
-    if (character == null) {
-      continue;
-    }
-
     if (character.socket == socket) {
       return character;
     }
@@ -53,15 +50,12 @@ io.on('connection', socket => {
   socket.emit('clock', Date.now());
 
   for (let character of characters) {
-    if (character == null) {
-      continue;
-    }
-
     socket.emit('character', character.parameters);
   };
 
-  let character = new Character(characters.length, socket);
-  characters.push(character);
+  characterIdCount += 1;
+  let character = new Character(characterIdCount, socket);
+  characters.add(character);
   console.log('new character');
   console.log(character.parameters);
   socket.emit('character', character.parameters);
@@ -75,8 +69,13 @@ io.on('connection', socket => {
     let character = myCharacter(socket);
     console.log('remove character');
     console.log(character.id);
-    characters[character.id] = null;
-    socket.broadcast.emit('remove_character', character.id);
+    characters.delete(character);
+    if (characters.size == 0) {
+      process.exit(0);
+    }
+    else {
+      socket.broadcast.emit('remove_character', character.id);
+    }
   });
 
   socket.on('jump', () => {
@@ -101,10 +100,6 @@ setInterval( () => {
   }
 
   for (let character of characters) {
-    if (character == null) {
-      continue;
-    }
-
     const left_wall = characterSize / 2;
     const right_wall = stageWidth - characterSize / 2;
     const ceil = 180 + characterSize / 2
