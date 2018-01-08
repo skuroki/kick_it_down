@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: web-server
+  name: web-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: web-server
+  template:
+    metadata:
+      labels:
+        run: web-server
+    spec:
+      containers:
+      - image: gcr.io/kick-it-down/web-server:latest
+        name: web-server
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+      restartPolicy: Always
