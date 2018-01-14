@@ -20,5 +20,7 @@ spec:
         ports:
         - containerPort: 80
           protocol: TCP
-        resources: {}
+        resources:
+          requests:
+            cpu: 0
       restartPolicy: Always
