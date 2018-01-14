@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: router
+  name: router
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: router
+  type: LoadBalancer
+  loadBalancerIP: '${LOAD_BALANCER_IP}'

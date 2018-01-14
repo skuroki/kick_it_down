@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: router
+  name: router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: router
+  template:
+    metadata:
+      labels:
+        run: router
+    spec:
+      containers:
+      - image: gcr.io/kick-it-down/router:latest
+        name: router
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+      restartPolicy: Always
