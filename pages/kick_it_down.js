@@ -46,66 +46,72 @@ function init() {
   stage.update();
   let characters = new Set();
 
-  let socket = io('http://localhost:8080');
+  fetch('/match')
+    .then((response) => response.text())
+    .then((serverName) => {
+      console.log('entering to ' + serverName);
 
-  socket.on('clock', time => {
-    ServerDate.set(time)
-  });
+      let socket = io('http://' + serverName + '.' + location.hostname + '/');
 
-  socket.on('character', data => {
-    console.log(data);
-    let shape = new createjs.Shape();
-    if (data.id > 1) {
-      shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
-    }
-    else {
-      shape.graphics.beginFill("Blue").drawRect(-16, -16, 32, 32);
-    }
-    stage.addChild(shape);
-    characters.add(new Character(shape, data.id, data.x, data.y, data.vx, data.vy, data.from));
-  });
+      socket.on('clock', time => {
+        ServerDate.set(time)
+      });
 
-  socket.on('update', data => {
-    console.log(data);
-    for (let character of characters) {
-      if (character.id == data.id) {
-        character.action(data);
-        break;
-      }
-    }
-  });
+      socket.on('character', data => {
+        console.log(data);
+        let shape = new createjs.Shape();
+        if (data.id > 1) {
+          shape.graphics.beginFill("Red").drawRect(-16, -16, 32, 32);
+        }
+        else {
+          shape.graphics.beginFill("Blue").drawRect(-16, -16, 32, 32);
+        }
+        stage.addChild(shape);
+        characters.add(new Character(shape, data.id, data.x, data.y, data.vx, data.vy, data.from));
+      });
 
-  socket.on('remove_character', characterId => {
-    console.log('remove_character');
-    console.log(characterId);
-    for (let character of characters) {
-      if (character.id == data.id) {
-        stage.removeChild(character.shape);
-        characters.delete(character);
-        break;
-      }
-    }
-  });
+      socket.on('update', data => {
+        console.log(data);
+        for (let character of characters) {
+          if (character.id == data.id) {
+            character.action(data);
+            break;
+          }
+        }
+      });
 
-  socket.on('won', () => {
-    textBoard.text = 'Won!'
-    socket.close();
-  });
+      socket.on('remove_character', characterId => {
+        console.log('remove_character');
+        console.log(characterId);
+        for (let character of characters) {
+          if (character.id == data.id) {
+            stage.removeChild(character.shape);
+            characters.delete(character);
+            break;
+          }
+        }
+      });
 
-  socket.on('lost', () => {
-    textBoard.text = 'Lost...'
-    socket.close();
-  });
+      socket.on('won', () => {
+        textBoard.text = 'Won!'
+        socket.close();
+      });
 
-  createjs.Ticker.addEventListener('tick', event => {
-    for (let character of characters) {
-      character.update();
-    }
-    stage.update();
-  });
+      socket.on('lost', () => {
+        textBoard.text = 'Lost...'
+        socket.close();
+      });
 
-  stage.addEventListener('click', event => {
-    console.log('click!');
-    socket.emit('jump');
-  });
+      createjs.Ticker.addEventListener('tick', event => {
+        for (let character of characters) {
+          character.update();
+        }
+        stage.update();
+      });
+
+      stage.addEventListener('click', event => {
+        console.log('click!');
+        socket.emit('jump');
+      });
+    });
 }
