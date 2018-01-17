@@ -181,3 +181,16 @@ setInterval( () => {
     }
   }
 }, 10);
+
+let fetch = require('node-fetch');
+let { URLSearchParams } = require('url');
+
+function sendStateToMatchingServer(state) {
+  let params = new URLSearchParams();
+  params.append('name', process.env.HOSTNAME);
+  params.append('state', state);
+  fetch('http://matching-server.default.svc.cluster.local/register', { method: 'POST', headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params })
+    .then(() => {});
+}
+
+sendStateToMatchingServer('ready');
