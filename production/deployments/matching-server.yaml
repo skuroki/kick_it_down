@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: matching-server
+  name: matching-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: matching-server
+  template:
+    metadata:
+      labels:
+        run: matching-server
+    spec:
+      containers:
+      - image: gcr.io/kick-it-down/matching-server:latest
+        name: matching-server
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0
+      restartPolicy: Always

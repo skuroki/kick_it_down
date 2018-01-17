@@ -17,6 +17,6 @@ app.post('/register', function (req, res) {
   res.send('ok');
 });
 
-app.listen(3000, function () {
+app.listen(8080, function () {
   console.log('matching server running');
 });
