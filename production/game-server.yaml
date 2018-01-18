@@ -18,7 +18,7 @@ metadata:
   name: game-server
 spec:
   serviceName: game-server
-  replicas: 3
+  replicas: 10
   selector:
     matchLabels:
       app: game-server
