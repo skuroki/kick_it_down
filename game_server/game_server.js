@@ -60,6 +60,12 @@ io.on('connection', socket => {
   console.log(character.parameters);
   socket.emit('character', character.parameters);
   socket.broadcast.emit('character', character.parameters);
+  if (characters.size == 1) {
+    sendStateToMatchingServer('waiting').then(() => {});
+  }
+  else {
+    sendStateToMatchingServer('filled').then(() => {});
+  }
 
   setInterval( () => {
     socket.emit('clock', Date.now());
@@ -71,9 +77,12 @@ io.on('connection', socket => {
     console.log(character.id);
     characters.delete(character);
     if (characters.size == 0) {
-      process.exit(0);
+      finish();
     }
     else {
+      if (winner == null) {
+        sendStateToMatchingServer('waiting').then(() => {});
+      }
       socket.broadcast.emit('remove_character', character.id);
     }
   });
@@ -189,8 +198,11 @@ function sendStateToMatchingServer(state) {
   let params = new URLSearchParams();
   params.append('name', process.env.HOSTNAME);
   params.append('state', state);
-  fetch('http://matching-server.default.svc.cluster.local/register', { method: 'POST', headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params })
-    .then(() => {});
+  return fetch('http://matching-server.default.svc.cluster.local/register', { method: 'POST', headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params });
 }
 
-sendStateToMatchingServer('ready');
+sendStateToMatchingServer('ready').then(() => {});
+
+function finish() {
+  sendStateToMatchingServer('finished').then(() => process.exit(0));
+}
